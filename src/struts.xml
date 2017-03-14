@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <constant name="struts.action.extension" value="do"/>
+    <constant name="struts.objectFactory" value="spring"/>
+    <package name="mqtt" extends="struts-default">
+
+        <action name="user_*" class="userAction" method="{1}">
+            <result name="regSuccess">/WEB-INF/user/myDevice.jsp</result>
+            <result name="bondSuccess">/WEB-INF/user/myDevice.jsp</result>
+            <result name="myDevice">/WEB-INF/user/myDevice.jsp</result>
+            <result name="delete">/WEB-INF/user/myDevice.jsp</result>
+            <result name="toLogin">/WEB-INF/user/login.jsp</result>
+            <result name="toReg">/WEB-INF/user/register.jsp</result>
+            <result name="toDeviceCon">/WEB-INF/chat/Devicechat.jsp</result>
+            <result name="toConnect">/WEB-INF/chat/Userchat.jsp</result>
+            <result name="input">/WEB-INF/user/register.jsp</result>
+
+            <!--<result name="userchat">/WEB-INF/chat/Userchat.jsp</result>-->
+            <!--<result name="devicechat">/WEB-INF/chat/Devicechat.jsp</result>-->
+        </action>
+
+        <action name="pub" class="publishAction" method="pub">
+
+        </action>
+
+        <action name="subBy_*" class="subscribeAction" method="{1}">
+            <result name="toLogin">/WEB-INF/user/login.jsp</result>
+        </action>
+    </package>
+</struts>

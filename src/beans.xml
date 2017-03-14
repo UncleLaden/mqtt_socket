@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+    <!-- 数据源配置 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <!--<property name="url" value="jdbc:mysql://localhost:3306/mqtt"/>-->
+        <property name="url" value="jdbc:mysql://192.168.67.129:3306/mqtt"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+    <!-- 配置sessionFactory -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mappingResources">
+            <list>
+
+                <value>cn/zrb/entity/Device.hbm.xml</value>
+                <value>cn/zrb/entity/Message.hbm.xml</value>
+                <value>cn/zrb/entity/Topic.hbm.xml</value>
+                <value>cn/zrb/entity/User.hbm.xml</value>
+                <value>cn/zrb/entity/UserDevice.hbm.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <value>
+                hibernate.dialect=org.hibernate.dialect.MySQLDialect
+                hibernate.hbm2ddl.auto=update
+                <!-- hibernate.show_sql=true
+                hibernate.format_sql=true
+                hibernate.cache.user_second_level_cache=true   使用hibernate的二级缓存
+                hibernate.cache.use_query_cache=false   是否使用查询缓存
+                hibernate.cache.provider_class=org.cache.EhCacheProvider  使用缓存的驱动类 -->
+            </value>
+        </property>
+    </bean>
+
+    <!--事务配置-->
+    <!--配置事物管理器类-->
+    <bean id="txManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 配置事务的传播特性 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <!--<bean id="mywebSocket" class="cn.zrb.servlet.MyWebSocket"/>-->
+    <!--配置事务切点，并把切点和事务属性关联起来-->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* cn.zrb.service.*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+        <!--<aop:aspect ref="mywebSocket">-->
+            <!--<aop:pointcut expression="execution(* cn.zrb.mqtt.MQTTCallback.messageArrived())" id="abc"/>-->
+            <!--<aop:after method="send" pointcut-ref="abc"/>-->
+        <!--</aop:aspect>-->
+    </aop:config>
+
+    <!--用@Transactional管理事务时必须配置如下指令，否则虽然能执行插入语句，但是不能执行数据库操作指令-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <bean id="userDao" class="cn.zrb.dao.impl.UserDaoImpl"/>
+    <bean id="topicDao" class="cn.zrb.dao.impl.TopicDaoImpl"/>
+    <bean id="messageDao" class="cn.zrb.dao.impl.MessageDaoImpl"/>
+
+    <bean id="userService" class="cn.zrb.service.impl.UserServiceImpl"/>
+    <bean id="topicService" class="cn.zrb.service.impl.TopicServiceImpl"/>
+    <bean id="messageService" class="cn.zrb.service.impl.MessageServiceImpl"/>
+
+    <bean id="userAction" class="cn.zrb.web.action.UserAction" scope="prototype"/>
+    <bean id="publishAction" class="cn.zrb.web.action.PublishAction"/>
+    <bean id="subscribeAction" class="cn.zrb.web.action.SubscribeAction"/>
+
+</beans>
